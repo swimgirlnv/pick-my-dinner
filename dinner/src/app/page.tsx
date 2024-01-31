@@ -2,6 +2,7 @@
 
 import styles from "./page.module.css";
 import { useEffect, useState } from 'react';
+import { sql } from "@vercel/postgres";
 
 import React, { createContext, useContext } from 'react';
 
