@@ -1,9 +1,10 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import axios from 'axios';
 
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const axios = require('axios');
+dotenv.config();
 
 const app = express();
 const port = 5001;
@@ -35,7 +36,7 @@ const getRecipeSuggestion = async (manualSuggestions) => {
       return manualSuggestions[Math.floor(Math.random() * manualSuggestions.length)];
     }
 
-    const apiKey = process.env.API_KEY;
+    const apiKey = dotenv.API_KEY;
     const prompt = 'Suggest a dinner recipe for tonight.';
 
     try {
@@ -67,7 +68,7 @@ const getRestaurantSuggestion = async (manualSuggestions) => {
         return manualSuggestions[Math.floor(Math.random() * manualSuggestions.length)];
     }
 
-const apiKey = process.env.API_KEY;
+const apiKey = dotenv.API_KEY;
 const prompt = 'Suggest a restaurant for dinner tonight.';
 
 try {
