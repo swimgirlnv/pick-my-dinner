@@ -1,0 +1,114 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const axios = require('axios');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+const app = express();
+const port = 5001;
+
+app.use(cors());
+app.use(bodyParser.json());
+
+let favorites = [];
+
+// Define a route for getting suggestions
+app.post('/api/get-suggestion', async (req, res) => {
+    const { option, manualSuggestions } = req.body;
+    try {
+        let suggestion;
+        if (option === 'stay-in') {
+        suggestion = await getRecipeSuggestion(manualSuggestions);
+        } else if (option === 'go-out') {
+        suggestion = await getRestaurantSuggestion(manualSuggestions);
+        }
+        res.json({ suggestion });
+    } catch (error) {
+        console.error('Error fetching suggestion:', error);
+        res.status(500).json({ error: 'Backend Error: Error fetching suggestion' });
+    }
+});
+
+// Route to add a favorite
+app.post('/api/add-favorite', (req, res) => {
+    const { suggestion } = req.body;
+    if (suggestion && !favorites.includes(suggestion)) {
+        favorites.push(suggestion);
+    }
+    res.json({ favorites });
+});
+
+// Route to get favorites
+app.get('/api/favorites', (req, res) => {
+    res.json({ favorites });
+});
+
+const getRecipeSuggestion = async (manualSuggestions) => {
+    if (manualSuggestions.length) {
+        return manualSuggestions[Math.floor(Math.random() * manualSuggestions.length)];
+    }
+
+    const apiKey = process.env.API_KEY;
+    const prompt = 'Suggest a dinner recipe for tonight.';
+
+    const headers = {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+    };
+
+    const data = {
+        prompt: prompt,
+        max_tokens: 500,
+    };
+
+    try {
+        console.log('here we go! (suggesting dinner recipe)');
+        const response = await axios.post(
+        'https://api.openai.com/v1/engines/gpt-3.5-turbo-instruct/completions',
+        data,
+        { headers }
+        );
+
+        return response.data.choices[0].text.trim();
+    } catch (error) {
+        console.log(error);
+        console.error('Error fetching recipe suggestion:', error.response ? error.response.data : error.message);
+        return 'Error fetching recipe suggestion';
+    }
+};
+
+const getRestaurantSuggestion = async (manualSuggestions) => {
+    if (manualSuggestions.length) {
+        return manualSuggestions[Math.floor(Math.random() * manualSuggestions.length)];
+    }
+
+    const apiKey = process.env.API_KEY;
+    const prompt = 'Suggest a restaurant for dinner tonight.';
+
+    try {
+        const response = await axios.post(
+        'https://api.openai.com/v1/engines/gpt-3.5-turbo-instruct/completions',
+        {
+            prompt: prompt,
+            max_tokens: 300,
+        },
+        {
+            headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            },
+        }
+        );
+
+        return response.data.choices[0].text.trim();
+    } catch (error) {
+        console.error('Error fetching restaurant suggestion:', error.response ? error.response.data : error.message);
+        return 'Error fetching restaurant suggestion';
+    }
+};
+
+app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+});
