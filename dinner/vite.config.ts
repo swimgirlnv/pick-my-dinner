@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     rollupOptions: {
-      external: ['axios'] // , '@mui/material'
+      external: ['axios', '@mui/material'] // , '@mui/material'
     }
   }
 })
