@@ -22,6 +22,8 @@ import Settings from './Settings';
 import Help from './Help';
 import About from './About';
 import theme from './theme';
+import { API_BASE_URL } from '../config';
+
 
 const Home: React.FC = () => {
   const [option, setOption] = useState('');
@@ -56,7 +58,7 @@ const Home: React.FC = () => {
 
   const fetchSuggestions = async () => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/suggestions`);
+      const response = await axios.get(`${API_BASE_URL}/api/suggestions`);
       setManualSuggestions(response.data.manualSuggestions);
     } catch (error) {
       console.error('Error fetching suggestions:', error);
@@ -65,7 +67,7 @@ const Home: React.FC = () => {
 
   const fetchFavorites = async () => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/favorites`);
+      const response = await axios.get(`${API_BASE_URL}/api/favorites`);
       setFavorites(response.data.favorites);
     } catch (error) {
       console.error('Error fetching favorites:', error);
@@ -74,7 +76,7 @@ const Home: React.FC = () => {
 
   const handleGetSuggestion = async () => {
     try {
-      const response = await axios.post(`http://localhost:5001/api/get-suggestion`, {
+      const response = await axios.post(`${API_BASE_URL}/api/get-suggestion`, {
         option,
         dietaryPreference,
         foodTypePreference
@@ -90,7 +92,7 @@ const Home: React.FC = () => {
     if (suggestion && !favorites.some(fav => fav.suggestion === suggestion)) {
       try {
         const type = option === 'stay-in' ? 'recipe' : 'restaurant';
-        const response = await axios.post(`http://localhost:5001/api/add-favorite`, {
+        const response = await axios.post(`${API_BASE_URL}/api/add-favorite`, {
           suggestion,
           type,
           tags: [dietaryPreference, foodTypePreference].filter(tag => tag !== '' && tag !== 'any' && tag !== 'none')
