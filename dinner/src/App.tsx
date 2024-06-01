@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
 import './App.css'
 import Home from './Home'
+import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
+// import theme from './theme';
 
-function App() {
-  // const [count, setCount] = useState(0)
+const defaultTheme = createTheme();
+
+const App = () => {
 
   return (
-    <>
-      <Home />
-    </>
+    <ThemeProvider theme={defaultTheme}>
+        <CssBaseline />
+        <Home />
+    </ThemeProvider>
   )
 }
 

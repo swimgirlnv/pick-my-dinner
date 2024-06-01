@@ -13,10 +13,12 @@ app.use(cors());
 app.use(bodyParser.json());
 
 let favorites = [];
+let manualSuggestions = [];
+
 
 // Define a route for getting suggestions
 app.post('/api/get-suggestion', async (req, res) => {
-    const { option, manualSuggestions } = req.body;
+    const { option } = req.body;
     try {
         let suggestion;
         if (option === 'stay-in') {
@@ -33,9 +35,9 @@ app.post('/api/get-suggestion', async (req, res) => {
 
 // Route to add a favorite
 app.post('/api/add-favorite', (req, res) => {
-    const { suggestion } = req.body;
-    if (suggestion && !favorites.includes(suggestion)) {
-        favorites.push(suggestion);
+    const { suggestion, type } = req.body;
+    if (suggestion && !favorites.some(fav => fav.suggestion === suggestion)) {
+        favorites.push({ suggestion, type });
     }
     res.json({ favorites });
 });
@@ -43,6 +45,10 @@ app.post('/api/add-favorite', (req, res) => {
 // Route to get favorites
 app.get('/api/favorites', (req, res) => {
     res.json({ favorites });
+});
+
+app.get('/api/suggestions', (req, res) => {
+    res.json({ manualSuggestions });
 });
 
 const getRecipeSuggestion = async (manualSuggestions) => {
@@ -73,7 +79,6 @@ const getRecipeSuggestion = async (manualSuggestions) => {
 
         return response.data.choices[0].text.trim();
     } catch (error) {
-        console.log(error);
         console.error('Error fetching recipe suggestion:', error.response ? error.response.data : error.message);
         return 'Error fetching recipe suggestion';
     }

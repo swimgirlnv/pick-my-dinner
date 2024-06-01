@@ -1,10 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState } from 'react';
-
-import Result from './Result';
-import AddSuggestion from './AddSuggestion';
-
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -13,74 +7,48 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
+  TextField,
   Typography,
   AppBar,
   Tabs,
   Tab,
   Paper,
   ThemeProvider,
-  createTheme
+  CssBaseline,
 } from '@mui/material';
+import axios from 'axios';
+import Result from './Result';
+import AddSuggestion from './AddSuggestion';
 import Settings from './Settings';
 import Help from './Help';
 import About from './About';
+import theme from './theme'; // Import the custom theme
 
-const theme = createTheme({
-  palette: {
-    mode: 'light', // Ensure the theme mode is set
-  },
-});
-
-
-const Home = () => {
-
+const Home: React.FC = () => {
   const [option, setOption] = useState('');
   const [manualSuggestions, setManualSuggestions] = useState<string[]>([]);
   const [suggestion, setSuggestion] = useState('');
-  const [newSuggestion, setNewSuggestion] = useState('');
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<{ suggestion: string; type: string }[]>([]);
   const [tab, setTab] = useState(0);
 
+  useEffect(() => {
+    fetchSuggestions();
+    fetchFavorites();
+  }, []);
 
-  const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setOption(e.target.value);
+  const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setOption(event.target.value);
   };
 
-  const handleNewSuggestionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewSuggestion(event.target.value);
-  };
-
-  const handleAddSuggestion = () => {
-    if (newSuggestion) {
-      setManualSuggestions([...manualSuggestions, newSuggestion]);
-      setNewSuggestion('');
-    }
-  };
-
-  const handleGetSuggestion = async () => {
+  const fetchSuggestions = async () => {
     try {
-      const response = await axios.post('http://localhost:5001/api/get-suggestion', {
-        option,
-        manualSuggestions,
-      });
-      setSuggestion(response.data.suggestion);
+      const response = await axios.get('http://localhost:5001/api/suggestions');
+      setManualSuggestions(response.data.manualSuggestions);
     } catch (error) {
-      console.error('Frontend Error: Error fetching suggestion:', error);
-      setSuggestion('Frontend: Error fetching suggestion');
+      console.error('Error fetching suggestions:', error);
     }
   };
 
-  const handleFavorite = async () => {
-    if (suggestion && !favorites.includes(suggestion)) {
-      try {
-        const response = await axios.post('http://localhost:5001/api/add-favorite', { suggestion });
-        setFavorites(response.data.favorites);
-      } catch (error) {
-        console.error('Error adding favorite:', error);
-      }
-    }
-  };
-  
   const fetchFavorites = async () => {
     try {
       const response = await axios.get('http://localhost:5001/api/favorites');
@@ -89,17 +57,34 @@ const Home = () => {
       console.error('Error fetching favorites:', error);
     }
   };
-  
-  // Fetch favorites when the component mounts
-  React.useEffect(() => {
-    fetchFavorites();
-  }, []);
 
+  const handleGetSuggestion = async () => {
+    try {
+      const response = await axios.post('http://localhost:5001/api/get-suggestion', {
+        option,
+      });
+      setSuggestion(response.data.suggestion);
+    } catch (error) {
+      console.error('Error fetching suggestion:', error);
+      setSuggestion('Error fetching suggestion');
+    }
+  };
+
+  const handleFavorite = async () => {
+    if (suggestion && !favorites.some(fav => fav.suggestion === suggestion)) {
+      try {
+        const type = option === 'stay-in' ? 'recipe' : 'restaurant';
+        const response = await axios.post('http://localhost:5001/api/add-favorite', { suggestion, type });
+        setFavorites(response.data.favorites);
+      } catch (error) {
+        console.error('Error adding favorite:', error);
+      }
+    }
+  };
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setTab(newValue);
   };
-
 
   const renderTabContent = () => {
     switch (tab) {
@@ -138,16 +123,37 @@ const Home = () => {
             <Typography variant="h4" gutterBottom>
               Your Favorites
             </Typography>
-            {favorites.length > 0 ? (
+            <Typography variant="h5">Restaurants</Typography>
+            {favorites.filter(fav => fav.type === 'restaurant').length > 0 ? (
               <Box>
-                {favorites.map((fav, index) => (
-                  <Paper key={index} elevation={3} style={{ padding: '10px', marginTop: '10px' }}>
-                    {fav}
+                {favorites.filter(fav => fav.type === 'restaurant').map((fav, index) => (
+                  <Paper
+                    key={index}
+                    elevation={3}
+                    sx={{ padding: '10px', marginTop: '10px', backgroundColor: theme.palette.customColors.color2 }} // Tea Green background for restaurants
+                  >
+                    {fav.suggestion}
                   </Paper>
                 ))}
               </Box>
             ) : (
-              <Typography variant="h6">No favorites yet.</Typography>
+              <Typography variant="h6">No favorite restaurants yet.</Typography>
+            )}
+            <Typography variant="h5" style={{ marginTop: '20px' }}>Recipes</Typography>
+            {favorites.filter(fav => fav.type === 'recipe').length > 0 ? (
+              <Box>
+                {favorites.filter(fav => fav.type === 'recipe').map((fav, index) => (
+                  <Paper
+                    key={index}
+                    elevation={3}
+                    sx={{ padding: '10px', marginTop: '10px', backgroundColor: theme.palette.secondary.main }} // Fawn background for recipes
+                  >
+                    {fav.suggestion}
+                  </Paper>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="h6">No favorite recipes yet.</Typography>
             )}
           </Box>
         );
@@ -164,19 +170,22 @@ const Home = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Container>
-        <AppBar position="fixed">
-          <Tabs value={tab} onChange={handleTabChange}>
-            <Tab label="Suggest Dinner" />
-            <Tab label="Add Your Own Suggestion" />
-            <Tab label="Favorites" />
-            <Tab label="Settings" />
-            <Tab label="Help" />
-            <Tab label="About" />
-          </Tabs>
-        </AppBar>
-        {renderTabContent()}
-      </Container>
+      <CssBaseline />
+      <Box sx={{ backgroundColor: theme.palette.customColors.color3, minHeight: '100vh' }}> {/* Set site background color */}
+        <Container>
+          <AppBar position="fixed" sx={{ backgroundColor: theme.palette.customColors.color1 }}> {/* Set top bar color */}
+            <Tabs value={tab} onChange={handleTabChange}>
+              <Tab label="Suggest Dinner" />
+              <Tab label="Add Your Own Suggestion" />
+              <Tab label="Favorites" />
+              <Tab label="Settings" />
+              <Tab label="Help" />
+              <Tab label="About" />
+            </Tabs>
+          </AppBar>
+          {renderTabContent()}
+        </Container>
+      </Box>
     </ThemeProvider>
   );
 };

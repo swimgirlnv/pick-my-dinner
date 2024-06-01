@@ -1,17 +1,29 @@
 import React from 'react';
-import { Paper, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 interface ResultProps {
-  suggestion: string;
+    suggestion: string;
 }
 
 const Result: React.FC<ResultProps> = ({ suggestion }) => {
-  return (
-    <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
-      <Typography variant="h5">Suggestion:</Typography>
-      <Typography variant="h6">{suggestion}</Typography>
-    </Paper>
-  );
+    return (
+        <Box
+            sx={{
+                whiteSpace: 'pre-wrap',
+                backgroundColor: '#f5f5f5',
+                padding: '10px',
+                borderRadius: '5px',
+                marginTop: '10px',
+                border: '1px solid #ddd',
+                display: 'flex',
+                flexDirection: 'row',
+                alignContent: 'left',
+                justifyContent: 'flex-start',
+            }}
+        >
+            <Typography variant="body1" dangerouslySetInnerHTML={{ __html: suggestion }} />
+        </Box>
+    );
 };
 
 export default Result;
