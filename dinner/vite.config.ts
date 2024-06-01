@@ -13,7 +13,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      // No external configuration here
+      external: [], // Ensure axios is not listed here
     }
   }
 });
