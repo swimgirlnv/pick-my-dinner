@@ -15,11 +15,8 @@ const Result: React.FC<ResultProps> = ({ suggestion }) => {
                 borderRadius: '5px',
                 marginTop: '10px',
                 border: '1px solid #ddd',
-                display: 'flex',
-                flexDirection: 'row',
-                alignContent: 'left',
-                justifyContent: 'flex-start',
             }}
+            textAlign={'left'}
         >
             <Typography variant="body1" dangerouslySetInnerHTML={{ __html: suggestion }} />
         </Box>

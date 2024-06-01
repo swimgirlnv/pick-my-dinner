@@ -211,12 +211,17 @@ const Home: React.FC = () => {
             </FormControl>
             <Typography variant="h5">Restaurants</Typography>
             {filteredFavorites.filter(fav => fav.type === 'restaurant').length > 0 ? (
-              <Box>
+              <Box textAlign={'left'}>
                 {filteredFavorites.filter(fav => fav.type === 'restaurant').map((fav, index) => (
                   <Paper
                     key={index}
                     elevation={3}
-                    sx={{ padding: '10px', marginTop: '10px', backgroundColor: theme.palette.customColors.color2 }}
+                    sx={{ padding: '10px', 
+                    marginTop: '10px', 
+                    backgroundColor: theme.palette.customColors.color2,
+                    whiteSpace: 'pre-wrap',
+                    borderRadius: '5px',
+                    border: '1px solid #ddd', }}
                   >
                     {fav.suggestion} - Tags: {fav.tags ? fav.tags.join(', ') : 'No Tags'}
                   </Paper>
@@ -227,12 +232,17 @@ const Home: React.FC = () => {
             )}
             <Typography variant="h5" style={{ marginTop: '20px' }}>Recipes</Typography>
             {filteredFavorites.filter(fav => fav.type === 'recipe').length > 0 ? (
-              <Box>
+              <Box textAlign={'left'}>
                 {filteredFavorites.filter(fav => fav.type === 'recipe').map((fav, index) => (
                   <Paper
-                    key={index}
-                    elevation={3}
-                    sx={{ padding: '10px', marginTop: '10px', backgroundColor: theme.palette.secondary.main }}
+                  key={index}
+                  elevation={3}
+                  sx={{ padding: '10px', 
+                  marginTop: '10px', 
+                  backgroundColor: theme.palette.secondary.main,
+                  whiteSpace: 'pre-wrap',
+                  borderRadius: '5px',
+                  border: '1px solid #ddd', }}
                   >
                     {fav.suggestion} - Tags: {fav.tags ? fav.tags.join(', ') : 'No Tags'}
                   </Paper>
