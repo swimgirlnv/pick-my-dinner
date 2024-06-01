@@ -23,16 +23,15 @@ import Help from './Help';
 import About from './About';
 import theme from './theme';
 
-
 const Home: React.FC = () => {
   const [option, setOption] = useState('');
-  const [manualSuggestions, setManualSuggestions] = useState<string[]>([]);
-  const [suggestion, setSuggestion] = useState('');
-  const [favorites, setFavorites] = useState<{ suggestion: string; type: string }[]>([]);
-  const [tab, setTab] = useState(0);
   const [dietaryPreference, setDietaryPreference] = useState('');
   const [foodTypePreference, setFoodTypePreference] = useState('');
-
+  const [manualSuggestions, setManualSuggestions] = useState<string[]>([]);
+  const [suggestion, setSuggestion] = useState('');
+  const [favorites, setFavorites] = useState<{ suggestion: string; type: string; tags: string[] }[]>([]);
+  const [filterTag, setFilterTag] = useState<string>('');
+  const [tab, setTab] = useState(0);
 
   useEffect(() => {
     fetchSuggestions();
@@ -42,18 +41,22 @@ const Home: React.FC = () => {
   const handleOptionChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setOption(event.target.value as string);
   };
-  
+
   const handleDietaryPreferenceChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setDietaryPreference(event.target.value as string);
   };
-  
+
   const handleFoodTypePreferenceChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setFoodTypePreference(event.target.value as string);
   };
 
+  const handleFilterTagChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setFilterTag(event.target.value as string);
+  };
+
   const fetchSuggestions = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/suggestions');
+      const response = await axios.get(`http://localhost:5001/api/suggestions`);
       setManualSuggestions(response.data.manualSuggestions);
     } catch (error) {
       console.error('Error fetching suggestions:', error);
@@ -62,7 +65,7 @@ const Home: React.FC = () => {
 
   const fetchFavorites = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/favorites');
+      const response = await axios.get(`http://localhost:5001/api/favorites`);
       setFavorites(response.data.favorites);
     } catch (error) {
       console.error('Error fetching favorites:', error);
@@ -71,7 +74,6 @@ const Home: React.FC = () => {
 
   const handleGetSuggestion = async () => {
     try {
-      // ${process.env.REACT_APP_API_URL}
       const response = await axios.post(`http://localhost:5001/api/get-suggestion`, {
         option,
         dietaryPreference,
@@ -83,13 +85,16 @@ const Home: React.FC = () => {
       setSuggestion('Error fetching suggestion');
     }
   };
-  
 
   const handleFavorite = async () => {
     if (suggestion && !favorites.some(fav => fav.suggestion === suggestion)) {
       try {
         const type = option === 'stay-in' ? 'recipe' : 'restaurant';
-        const response = await axios.post('http://localhost:5001/api/add-favorite', { suggestion, type });
+        const response = await axios.post(`http://localhost:5001/api/add-favorite`, {
+          suggestion,
+          type,
+          tags: [dietaryPreference, foodTypePreference].filter(tag => tag !== '' && tag !== 'any' && tag !== 'none')
+        });
         setFavorites(response.data.favorites);
       } catch (error) {
         console.error('Error adding favorite:', error);
@@ -97,9 +102,10 @@ const Home: React.FC = () => {
     }
   };
 
-  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setTab(newValue);
-  };
+  const filteredFavorites = favorites.filter(fav => {
+    if (filterTag === '') return true;
+    return fav.tags.includes(filterTag);
+  });
 
   const renderTabContent = () => {
     switch (tab) {
@@ -164,7 +170,7 @@ const Home: React.FC = () => {
             {suggestion && (
               <Box mt={3}>
                 <Result suggestion={suggestion} />
-                <Button variant="contained" color="default" onClick={handleFavorite} style={{ marginTop: '10px' }}>
+                <Button variant="contained" onClick={handleFavorite} style={{ marginTop: '10px' }}>
                   Favorite
                 </Button>
               </Box>
@@ -179,16 +185,38 @@ const Home: React.FC = () => {
             <Typography variant="h4" gutterBottom>
               Your Favorites
             </Typography>
+            <FormControl variant="outlined" fullWidth margin="normal">
+              <InputLabel id="filter-tag-label">Filter by Tag</InputLabel>
+              <Select
+                labelId="filter-tag-label"
+                id="filter-tag"
+                value={filterTag}
+                onChange={handleFilterTagChange}
+                label="Filter by Tag"
+              >
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="vegetarian">Vegetarian</MenuItem>
+                <MenuItem value="vegan">Vegan</MenuItem>
+                <MenuItem value="gluten-free">Gluten-Free</MenuItem>
+                <MenuItem value="halal">Halal</MenuItem>
+                <MenuItem value="kosher">Kosher</MenuItem>
+                <MenuItem value="italian">Italian</MenuItem>
+                <MenuItem value="chinese">Chinese</MenuItem>
+                <MenuItem value="indian">Indian</MenuItem>
+                <MenuItem value="mexican">Mexican</MenuItem>
+                <MenuItem value="japanese">Japanese</MenuItem>
+              </Select>
+            </FormControl>
             <Typography variant="h5">Restaurants</Typography>
-            {favorites.filter(fav => fav.type === 'restaurant').length > 0 ? (
+            {filteredFavorites.filter(fav => fav.type === 'restaurant').length > 0 ? (
               <Box>
-                {favorites.filter(fav => fav.type === 'restaurant').map((fav, index) => (
+                {filteredFavorites.filter(fav => fav.type === 'restaurant').map((fav, index) => (
                   <Paper
                     key={index}
                     elevation={3}
                     sx={{ padding: '10px', marginTop: '10px', backgroundColor: theme.palette.customColors.color2 }}
                   >
-                    {fav.suggestion}
+                    {fav.suggestion} - Tags: {fav.tags ? fav.tags.join(', ') : 'No Tags'}
                   </Paper>
                 ))}
               </Box>
@@ -196,15 +224,15 @@ const Home: React.FC = () => {
               <Typography variant="h6">No favorite restaurants yet.</Typography>
             )}
             <Typography variant="h5" style={{ marginTop: '20px' }}>Recipes</Typography>
-            {favorites.filter(fav => fav.type === 'recipe').length > 0 ? (
+            {filteredFavorites.filter(fav => fav.type === 'recipe').length > 0 ? (
               <Box>
-                {favorites.filter(fav => fav.type === 'recipe').map((fav, index) => (
+                {filteredFavorites.filter(fav => fav.type === 'recipe').map((fav, index) => (
                   <Paper
                     key={index}
                     elevation={3}
                     sx={{ padding: '10px', marginTop: '10px', backgroundColor: theme.palette.secondary.main }}
                   >
-                    {fav.suggestion}
+                    {fav.suggestion} - Tags: {fav.tags ? fav.tags.join(', ') : 'No Tags'}
                   </Paper>
                 ))}
               </Box>
@@ -223,15 +251,14 @@ const Home: React.FC = () => {
         return null;
     }
   };
-  
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ backgroundColor: theme.palette.customColors.color3, minHeight: '100vh' }}> {/* Set site background color */}
+      <Box sx={{ backgroundColor: theme.palette.customColors.color3, minHeight: '100vh' }}>
         <Container>
-          <AppBar position="fixed" sx={{ backgroundColor: theme.palette.customColors.color1 }}> {/* Set top bar color */}
-            <Tabs value={tab} onChange={handleTabChange}>
+          <AppBar position="fixed" sx={{ backgroundColor: theme.palette.customColors.color1 }}>
+            <Tabs value={tab} onChange={(event, newValue) => setTab(newValue)}>
               <Tab label="Suggest Dinner" />
               <Tab label="Add Your Own Suggestion" />
               <Tab label="Favorites" />
