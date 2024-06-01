@@ -4,10 +4,9 @@ import {
   Button,
   Container,
   FormControl,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  TextField,
+  InputLabel,
+  MenuItem,
+  Select,
   Typography,
   AppBar,
   Tabs,
@@ -22,7 +21,8 @@ import AddSuggestion from './AddSuggestion';
 import Settings from './Settings';
 import Help from './Help';
 import About from './About';
-import theme from './theme'; // Import the custom theme
+import theme from './theme';
+
 
 const Home: React.FC = () => {
   const [option, setOption] = useState('');
@@ -30,14 +30,25 @@ const Home: React.FC = () => {
   const [suggestion, setSuggestion] = useState('');
   const [favorites, setFavorites] = useState<{ suggestion: string; type: string }[]>([]);
   const [tab, setTab] = useState(0);
+  const [dietaryPreference, setDietaryPreference] = useState('');
+  const [foodTypePreference, setFoodTypePreference] = useState('');
+
 
   useEffect(() => {
     fetchSuggestions();
     fetchFavorites();
   }, []);
 
-  const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setOption(event.target.value);
+  const handleOptionChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setOption(event.target.value as string);
+  };
+  
+  const handleDietaryPreferenceChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setDietaryPreference(event.target.value as string);
+  };
+  
+  const handleFoodTypePreferenceChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setFoodTypePreference(event.target.value as string);
   };
 
   const fetchSuggestions = async () => {
@@ -60,8 +71,11 @@ const Home: React.FC = () => {
 
   const handleGetSuggestion = async () => {
     try {
-      const response = await axios.post('http://localhost:5001/api/get-suggestion', {
+      // ${process.env.REACT_APP_API_URL}
+      const response = await axios.post(`http://localhost:5001/api/get-suggestion`, {
         option,
+        dietaryPreference,
+        foodTypePreference
       });
       setSuggestion(response.data.suggestion);
     } catch (error) {
@@ -69,6 +83,7 @@ const Home: React.FC = () => {
       setSuggestion('Error fetching suggestion');
     }
   };
+  
 
   const handleFavorite = async () => {
     if (suggestion && !favorites.some(fav => fav.suggestion === suggestion)) {
@@ -94,11 +109,52 @@ const Home: React.FC = () => {
             <Typography variant="h3" gutterBottom>
               Where Should I Eat Dinner?
             </Typography>
-            <FormControl component="fieldset">
-              <RadioGroup row aria-label="dinner-option" name="dinner-option" value={option} onChange={handleOptionChange}>
-                <FormControlLabel value="stay-in" control={<Radio />} label="Stay In" />
-                <FormControlLabel value="go-out" control={<Radio />} label="Go Out" />
-              </RadioGroup>
+            <FormControl variant="outlined" fullWidth margin="normal">
+              <InputLabel id="option-label">Option</InputLabel>
+              <Select
+                labelId="option-label"
+                id="option"
+                value={option}
+                onChange={handleOptionChange}
+                label="Option"
+              >
+                <MenuItem value="stay-in">Stay In</MenuItem>
+                <MenuItem value="go-out">Go Out</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl variant="outlined" fullWidth margin="normal">
+              <InputLabel id="dietary-preference-label">Dietary Preference</InputLabel>
+              <Select
+                labelId="dietary-preference-label"
+                id="dietary-preference"
+                value={dietaryPreference}
+                onChange={handleDietaryPreferenceChange}
+                label="Dietary Preference"
+              >
+                <MenuItem value="none">None</MenuItem>
+                <MenuItem value="vegetarian">Vegetarian</MenuItem>
+                <MenuItem value="vegan">Vegan</MenuItem>
+                <MenuItem value="gluten-free">Gluten-Free</MenuItem>
+                <MenuItem value="halal">Halal</MenuItem>
+                <MenuItem value="kosher">Kosher</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl variant="outlined" fullWidth margin="normal">
+              <InputLabel id="food-type-preference-label">Food Type Preference</InputLabel>
+              <Select
+                labelId="food-type-preference-label"
+                id="food-type-preference"
+                value={foodTypePreference}
+                onChange={handleFoodTypePreferenceChange}
+                label="Food Type Preference"
+              >
+                <MenuItem value="any">Any</MenuItem>
+                <MenuItem value="italian">Italian</MenuItem>
+                <MenuItem value="chinese">Chinese</MenuItem>
+                <MenuItem value="indian">Indian</MenuItem>
+                <MenuItem value="mexican">Mexican</MenuItem>
+                <MenuItem value="japanese">Japanese</MenuItem>
+              </Select>
             </FormControl>
             <Box mt={3}>
               <Button variant="contained" color="secondary" onClick={handleGetSuggestion}>
@@ -108,7 +164,7 @@ const Home: React.FC = () => {
             {suggestion && (
               <Box mt={3}>
                 <Result suggestion={suggestion} />
-                <Button variant="contained" onClick={handleFavorite} style={{ marginTop: '10px' }}>
+                <Button variant="contained" color="default" onClick={handleFavorite} style={{ marginTop: '10px' }}>
                   Favorite
                 </Button>
               </Box>
@@ -130,7 +186,7 @@ const Home: React.FC = () => {
                   <Paper
                     key={index}
                     elevation={3}
-                    sx={{ padding: '10px', marginTop: '10px', backgroundColor: theme.palette.customColors.color2 }} // Tea Green background for restaurants
+                    sx={{ padding: '10px', marginTop: '10px', backgroundColor: theme.palette.customColors.color2 }}
                   >
                     {fav.suggestion}
                   </Paper>
@@ -146,7 +202,7 @@ const Home: React.FC = () => {
                   <Paper
                     key={index}
                     elevation={3}
-                    sx={{ padding: '10px', marginTop: '10px', backgroundColor: theme.palette.secondary.main }} // Fawn background for recipes
+                    sx={{ padding: '10px', marginTop: '10px', backgroundColor: theme.palette.secondary.main }}
                   >
                     {fav.suggestion}
                   </Paper>
@@ -167,6 +223,7 @@ const Home: React.FC = () => {
         return null;
     }
   };
+  
 
   return (
     <ThemeProvider theme={theme}>
