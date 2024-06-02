@@ -75,10 +75,13 @@ const Home: React.FC = () => {
         },
         (error) => {
           console.error('Error getting location:', error);
-        }
+          alert('Error getting location. Please ensure location services are enabled.');
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );
     } else {
       console.error('Geolocation is not supported by this browser.');
+      alert('Geolocation is not supported by this browser.');
     }
   };
 
@@ -133,6 +136,10 @@ const Home: React.FC = () => {
   };
 
   const handleGetSuggestion = async () => {
+    if (!location) {
+      alert('Location data is required for "go-out" suggestions. Please enable location services.');
+      return;
+    }
     try {
       const response = await axios.post(`${API_BASE_URL}/api/get-suggestion`, {
         option,
