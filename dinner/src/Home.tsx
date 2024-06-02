@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
@@ -40,12 +40,20 @@ const Home: React.FC = () => {
   const [filterTag, setFilterTag] = useState<string>('');
   const [tab, setTab] = useState(0);
   const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     fetchSuggestions();
     fetchFavorites();
     getLocation();
   }, []);
+
+  useEffect(() => {
+    if (suggestion && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [suggestion]);
 
   const getLocation = () => {
     if (navigator.geolocation) {
@@ -160,7 +168,7 @@ const Home: React.FC = () => {
       case 0:
         return (
           <Box textAlign="center" mt={5}>
-            <Typography variant="h3" gutterBottom>
+            <Typography variant="h4" gutterBottom>
               Where Should I Eat Dinner?
             </Typography>
             <FormControl variant="outlined" fullWidth margin="normal">
@@ -263,11 +271,11 @@ const Home: React.FC = () => {
             />
             <Box mt={3}>
               <Button variant="contained" color="secondary" onClick={handleGetSuggestion}>
-                Where Should I Eat?
+              <img src="https://i.imgur.com/9CW99ux.png" alt="logo" width="200px" height="200px" />
               </Button>
             </Box>
             {suggestion && (
-              <Box mt={3}>
+              <Box mt={3} ref={resultRef}>
                 <Result suggestion={suggestion} />
                 <Button variant="contained" onClick={handleFavorite} style={{ marginTop: '10px' }}>
                   Favorite
