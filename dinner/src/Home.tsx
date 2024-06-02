@@ -10,12 +10,19 @@ import {
   TextField,
   Typography,
   AppBar,
+  Toolbar,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
   Tabs,
   Tab,
   Paper,
   ThemeProvider,
   CssBaseline,
 } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import axios from 'axios';
 import Result from './Result';
 import AddSuggestion from './AddSuggestion';
@@ -40,6 +47,8 @@ const Home: React.FC = () => {
   const [filterTag, setFilterTag] = useState<string>('');
   const [tab, setTab] = useState(0);
   const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   const resultRef = useRef<HTMLDivElement>(null);
 
 
@@ -162,6 +171,17 @@ const Home: React.FC = () => {
     if (filterTag === '') return true;
     return fav.tags.includes(filterTag);
   });
+
+  const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+    if (
+      event.type === 'keydown' &&
+      ((event as React.KeyboardEvent).key === 'Tab' ||
+        (event as React.KeyboardEvent).key === 'Shift')
+    ) {
+      return;
+    }
+    setDrawerOpen(open);
+  };
 
   const renderTabContent = () => {
     switch (tab) {
@@ -382,15 +402,64 @@ const Home: React.FC = () => {
       <Box sx={{ backgroundColor: theme.palette.customColors.color3, minHeight: '100vh' }}>
         <Container>
           <AppBar position="fixed" sx={{ backgroundColor: theme.palette.customColors.color1 }}>
-            <Tabs value={tab} onChange={(event, newValue) => setTab(newValue)}>
-              <Tab label="Suggest Dinner" />
-              <Tab label="Add Your Own Suggestion" />
-              <Tab label="Favorites" />
-              <Tab label="Privacy Policy" />
-              <Tab label="Help" />
-              <Tab label="About" />
-            </Tabs>
+            <Toolbar>
+              <IconButton
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                onClick={toggleDrawer(true)}
+                sx={{ mr: 2, display: { md: 'none' } }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Tabs
+                value={tab}
+                onChange={(event, newValue) => setTab(newValue)}
+                sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}
+              >
+                <Tab label="Suggest Dinner" />
+                <Tab label="Add Your Own Suggestion" />
+                <Tab label="Favorites" />
+                <Tab label="Settings" />
+                <Tab label="Help" />
+                <Tab label="About" />
+              </Tabs>
+            </Toolbar>
           </AppBar>
+          <Drawer
+            anchor="left"
+            open={drawerOpen}
+            onClose={toggleDrawer(false)}
+            sx={{ display: { md: 'none' } }}
+          >
+            <Box
+              sx={{ width: 250 }}
+              role="presentation"
+              onClick={toggleDrawer(false)}
+              onKeyDown={toggleDrawer(false)}
+            >
+              <List>
+                <ListItem button onClick={() => setTab(0)}>
+                  <ListItemText primary="Suggest Dinner" />
+                </ListItem>
+                <ListItem button onClick={() => setTab(1)}>
+                  <ListItemText primary="Add Your Own Suggestion" />
+                </ListItem>
+                <ListItem button onClick={() => setTab(2)}>
+                  <ListItemText primary="Favorites" />
+                </ListItem>
+                <ListItem button onClick={() => setTab(3)}>
+                  <ListItemText primary="Settings" />
+                </ListItem>
+                <ListItem button onClick={() => setTab(4)}>
+                  <ListItemText primary="Help" />
+                </ListItem>
+                <ListItem button onClick={() => setTab(5)}>
+                  <ListItemText primary="About" />
+                </ListItem>
+              </List>
+            </Box>
+          </Drawer>
           {renderTabContent()}
         </Container>
       </Box>

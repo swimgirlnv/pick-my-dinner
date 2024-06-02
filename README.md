@@ -3,7 +3,7 @@
 # TODOs
 
 ## Overall UI
-- Fix UI for topbar, make it mobile friendly overall
+- make it mobile friendly overall
 
 
 ## Suggest Dinner Tab
@@ -32,7 +32,7 @@
 # ALL DONEs
 
 ## Overall UI
-
+- Fix UI for topbar (now mobile friendly)
 
 ## Suggest Dinner Tab
 - add location services for the 'go out' button
