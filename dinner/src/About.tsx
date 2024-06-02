@@ -6,9 +6,6 @@ const About: React.FC = () => {
         <Box textAlign="center" mt={5}>
             <img src="https://i.imgur.com/9CW99ux.png" alt="logo" width="200px" height="200px" />
             <br />
-        <Typography variant="h4" gutterBottom>
-            About
-        </Typography>
         <Box textAlign="left" maxWidth="600px" margin="auto">
             <Typography variant='body1'>
                 This application was created by <a href="https://www.linkedin.com/in/rebecca-waterson-b3b95b21a/" target='_blank'>Becca Waterson</a>.
@@ -22,7 +19,7 @@ const About: React.FC = () => {
             </Typography>
         </Box>
         <br />
-        <Typography variant="h4" gutterBottom> Disclaimer </Typography>
+        <Typography variant="h5" gutterBottom> Disclaimer </Typography>
         <Box textAlign="left" maxWidth="600px" margin="auto">
             <Typography variant='body1'>
                 This application is for entertainment purposes only. 
@@ -38,6 +35,15 @@ const About: React.FC = () => {
                 recipes. Enjoy cooking and bon appétit, but remember to take these suggestions with a grain of salt!
             </Typography>
         </Box>
+        <br />
+        <Typography variant="h5" gutterBottom> Contact Us </Typography>
+        <Box textAlign="left" maxWidth="600px" margin="auto">
+            <Typography variant='body1'>
+                If you have any questions, concerns, or feedback, please feel free to contact me at <a href="mailto:rebeccaqwaterson@gmail.com" target='_blank'>rebeccaqwaterson@gmail.com</a>. 
+                I am always looking for ways to improve my application and welcome your input.
+            </Typography>
+        </Box>
+        <br />
         </Box>
     );
 };

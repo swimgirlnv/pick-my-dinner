@@ -33,13 +33,13 @@ const Home: React.FC = () => {
   const [healthiness, setHealthiness] = useState('');
   const [numServings, setNumServings] = useState('');
   const [customPreferences, setCustomPreferences] = useState('');
+  const [searchRadius, setSearchRadius] = useState(5000); // Default radius in meters
   const [manualSuggestions, setManualSuggestions] = useState<string[]>([]);
   const [suggestion, setSuggestion] = useState('');
   const [favorites, setFavorites] = useState<{ suggestion: string; type: string; tags: string[] }[]>([]);
   const [filterTag, setFilterTag] = useState<string>('');
   const [tab, setTab] = useState(0);
   const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
-
 
   useEffect(() => {
     fetchSuggestions();
@@ -81,12 +81,16 @@ const Home: React.FC = () => {
     setHealthiness(event.target.value as string);
   };
 
-  const handleNumServingsChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setNumServings(event.target.value as string);
+  const handleNumServingsChange = (event: React.ChangeEvent<{ value: string }>) => {
+    setNumServings(event.target.value);
   };
 
   const handleCustomPreferencesChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setCustomPreferences(event.target.value as string);
+  };
+
+  const handleSearchRadiusChange = (event: React.ChangeEvent<{ value: string }>) => {
+    setSearchRadius(parseInt(event.target.value, 10));
   };
 
   const handleFilterTagChange = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -120,6 +124,7 @@ const Home: React.FC = () => {
         healthiness,
         numServings,
         customPreferences,
+        searchRadius,
         location,
       });
       setSuggestion(response.data.suggestion);
@@ -167,7 +172,7 @@ const Home: React.FC = () => {
                 onChange={handleOptionChange}
                 label="Option"
               >
-                <MenuItem value="surprise">Surprise Me</MenuItem>
+                <MenuItem value="surprise">Surprise Me!</MenuItem>
                 <MenuItem value="stay-in">Stay In</MenuItem>
                 <MenuItem value="go-out">Go Out</MenuItem>
               </Select>
@@ -216,28 +221,38 @@ const Home: React.FC = () => {
                 onChange={handleHealthinessChange}
                 label="Healthiness"
               >
-                <MenuItem value="any">Any</MenuItem>
                 <MenuItem value="healthier">Healthier</MenuItem>
                 <MenuItem value="comfort">Comfort Food</MenuItem>
               </Select>
             </FormControl>
-            <FormControl variant="outlined" fullWidth margin="normal">
-              <InputLabel id="num-servings-label">Number of Servings</InputLabel>
-              <Select
-                labelId="num-servings-label"
-                id="num-servings"
-                value={numServings}
-                onChange={handleNumServingsChange}
-                label="Number of Servings"
-              >
-                <MenuItem value="1">1</MenuItem>
-                <MenuItem value="2">2</MenuItem>
-                <MenuItem value="3">3</MenuItem>
-                <MenuItem value="4">4</MenuItem>
-                <MenuItem value="5">5</MenuItem>
-                <MenuItem value="6">6</MenuItem>
-              </Select>
-            </FormControl>
+            {option === 'stay-in' && (
+              <FormControl variant="outlined" fullWidth margin="normal">
+                <TextField
+                  id="num-servings"
+                  label="Number of Servings"
+                  type="number"
+                  value={numServings}
+                  onChange={handleNumServingsChange}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </FormControl>
+            )}
+            {option === 'go-out' && (
+              <FormControl variant="outlined" fullWidth margin="normal">
+                <TextField
+                  id="search-radius"
+                  label="Search Radius (meters)"
+                  type="number"
+                  value={searchRadius}
+                  onChange={handleSearchRadiusChange}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </FormControl>
+            )}
             <TextField
               variant="outlined"
               fullWidth
@@ -363,7 +378,7 @@ const Home: React.FC = () => {
               <Tab label="Suggest Dinner" />
               <Tab label="Add Your Own Suggestion" />
               <Tab label="Favorites" />
-              <Tab label="Settings" />
+              <Tab label="Privacy Policy" />
               <Tab label="Help" />
               <Tab label="About" />
             </Tabs>

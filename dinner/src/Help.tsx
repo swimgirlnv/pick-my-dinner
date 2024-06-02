@@ -7,7 +7,7 @@ const Help: React.FC = () => {
         <Typography variant="h4" gutterBottom>
             Help
         </Typography>
-        <Typography variant="body1" textAlign={'left'}>
+        <Typography variant="body1" textAlign={'left'} maxWidth="600px" margin={'auto'}>
         Welcome to Pick My Dinner! This help section is designed to guide you through using 
         the app and provide some documentation on its features and functionality. Whether 
         you're a new user or a returning one, this guide will help you make the most out of the application.
@@ -16,7 +16,7 @@ const Help: React.FC = () => {
         <Typography variant="h5" gutterBottom>
             Using the App
         </Typography>
-        <Typography variant="body1" textAlign={'left'}>
+        <Typography variant="body1" textAlign={'left'} maxWidth="600px" margin={'auto'}>
             <ol>
                 <li>Get a Suggestion:</li>
                 <ul>
@@ -41,7 +41,7 @@ const Help: React.FC = () => {
             </ol>
         </Typography>
         <br />
-        <Typography variant="body1" textAlign={'left'}>
+        <Typography variant="body1" textAlign={'left'} maxWidth="600px" margin={'auto'}>
         We hope you enjoy using Pick My Dinner! If you have any feedback or suggestions, please let us know. 
         Happy cooking and dining!
         </Typography>

@@ -14,18 +14,25 @@ const favorites = [];
 const manualSuggestions = [];
 
 app.post("/api/get-suggestion", async (req, res) => {
-  const {option, dietaryPreference, foodTypePreference, healthiness, numServings, customPreferences, location} = req.body;
+  const {option, dietaryPreference, foodTypePreference, healthiness, numServings, customPreferences, searchRadius, location} = req.body;
   try {
     let suggestion;
     if (option === "stay-in") {
       suggestion = await getRecipeSuggestion(manualSuggestions, dietaryPreference, foodTypePreference, healthiness, numServings, customPreferences);
     } else if (option === "go-out") {
-      suggestion = await getRestaurantSuggestion(manualSuggestions, dietaryPreference, foodTypePreference, customPreferences, location);
+      suggestion = await getRestaurantSuggestion(manualSuggestions, dietaryPreference, foodTypePreference, customPreferences, searchRadius, location);
+    } else if (option === "surprise") {
+      const randomOption = Math.random() < 0.5 ? "stay-in" : "go-out";
+      if (randomOption === "stay-in") {
+        suggestion = await getRecipeSuggestion(manualSuggestions, dietaryPreference, foodTypePreference, healthiness, numServings, customPreferences);
+      } else if (randomOption === "go-out") {
+        suggestion = await getRestaurantSuggestion(manualSuggestions, dietaryPreference, foodTypePreference, customPreferences, searchRadius, location);
+      }
     }
     res.json({suggestion});
   } catch (error) {
     console.error("Error fetching suggestion:", error);
-    res.status(500).json({error: "Backend Error: Error fetching suggestion"});
+    res.status(500).json({error: "Backend Error: Error fetching suggestion", details: error.message});
   }
 });
 
@@ -97,13 +104,13 @@ const getRecipeSuggestion = async (manualSuggestions, dietaryPreference, foodTyp
   }
 };
 
-const getRestaurantSuggestion = async (manualSuggestions, dietaryPreference, foodTypePreference, customPreferences, location) => {
+const getRestaurantSuggestion = async (manualSuggestions, dietaryPreference, foodTypePreference, customPreferences, searchRadius, location) => {
   if (manualSuggestions.length) {
     return manualSuggestions[Math.floor(Math.random() * manualSuggestions.length)];
   }
 
   const apiKey = functions.config().google_places.api_key;
-  const radius = 1700; // Radius in meters
+  const radius = searchRadius; // Use the search radius provided by the user
   let query = `restaurants near me`;
   if (dietaryPreference !== "none") {
     query += ` with a ${dietaryPreference} preference`;
@@ -134,7 +141,7 @@ const getRestaurantSuggestion = async (manualSuggestions, dietaryPreference, foo
       console.error("Error status:", error.response.status);
       console.error("Error data:", error.response.data);
     }
-    return "Error fetching restaurant suggestion:", error.response ? error.response.data : error.message;
+    return "Error fetching restaurant suggestion";
   }
 };
 
