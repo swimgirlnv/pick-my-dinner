@@ -7,6 +7,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  TextField,
   Typography,
   AppBar,
   Tabs,
@@ -23,22 +24,46 @@ import Help from './Help';
 import About from './About';
 import theme from './theme';
 import { API_BASE_URL } from '../config';
-
+import Footer from './Footer';
 
 const Home: React.FC = () => {
   const [option, setOption] = useState('');
   const [dietaryPreference, setDietaryPreference] = useState('');
   const [foodTypePreference, setFoodTypePreference] = useState('');
+  const [healthiness, setHealthiness] = useState('');
+  const [numServings, setNumServings] = useState('');
+  const [customPreferences, setCustomPreferences] = useState('');
   const [manualSuggestions, setManualSuggestions] = useState<string[]>([]);
   const [suggestion, setSuggestion] = useState('');
   const [favorites, setFavorites] = useState<{ suggestion: string; type: string; tags: string[] }[]>([]);
   const [filterTag, setFilterTag] = useState<string>('');
   const [tab, setTab] = useState(0);
+  const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
+
 
   useEffect(() => {
     fetchSuggestions();
     fetchFavorites();
+    getLocation();
   }, []);
+
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
+  };
 
   const handleOptionChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setOption(event.target.value as string);
@@ -50,6 +75,18 @@ const Home: React.FC = () => {
 
   const handleFoodTypePreferenceChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setFoodTypePreference(event.target.value as string);
+  };
+
+  const handleHealthinessChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setHealthiness(event.target.value as string);
+  };
+
+  const handleNumServingsChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setNumServings(event.target.value as string);
+  };
+
+  const handleCustomPreferencesChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setCustomPreferences(event.target.value as string);
   };
 
   const handleFilterTagChange = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -79,12 +116,16 @@ const Home: React.FC = () => {
       const response = await axios.post(`${API_BASE_URL}/api/get-suggestion`, {
         option,
         dietaryPreference,
-        foodTypePreference
+        foodTypePreference,
+        healthiness,
+        numServings,
+        customPreferences,
+        location,
       });
       setSuggestion(response.data.suggestion);
     } catch (error) {
       console.error('Error fetching suggestion:', error);
-      setSuggestion('Error fetching suggestion');
+      setSuggestion('Error fetching suggestion' + error);
     }
   };
 
@@ -95,7 +136,7 @@ const Home: React.FC = () => {
         const response = await axios.post(`${API_BASE_URL}/api/add-favorite`, {
           suggestion,
           type,
-          tags: [dietaryPreference, foodTypePreference].filter(tag => tag !== '' && tag !== 'any' && tag !== 'none')
+          tags: [dietaryPreference, foodTypePreference, healthiness, numServings, customPreferences].filter(tag => tag !== '' && tag !== 'any' && tag !== 'none'),
         });
         setFavorites(response.data.favorites);
       } catch (error) {
@@ -126,6 +167,7 @@ const Home: React.FC = () => {
                 onChange={handleOptionChange}
                 label="Option"
               >
+                <MenuItem value="surprise">Surprise Me</MenuItem>
                 <MenuItem value="stay-in">Stay In</MenuItem>
                 <MenuItem value="go-out">Go Out</MenuItem>
               </Select>
@@ -162,8 +204,48 @@ const Home: React.FC = () => {
                 <MenuItem value="indian">Indian</MenuItem>
                 <MenuItem value="mexican">Mexican</MenuItem>
                 <MenuItem value="japanese">Japanese</MenuItem>
+                <MenuItem value="american">American</MenuItem>
               </Select>
             </FormControl>
+            <FormControl variant="outlined" fullWidth margin="normal">
+              <InputLabel id="healthiness-label">Healthiness</InputLabel>
+              <Select
+                labelId="healthiness-label"
+                id="healthiness"
+                value={healthiness}
+                onChange={handleHealthinessChange}
+                label="Healthiness"
+              >
+                <MenuItem value="any">Any</MenuItem>
+                <MenuItem value="healthier">Healthier</MenuItem>
+                <MenuItem value="comfort">Comfort Food</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl variant="outlined" fullWidth margin="normal">
+              <InputLabel id="num-servings-label">Number of Servings</InputLabel>
+              <Select
+                labelId="num-servings-label"
+                id="num-servings"
+                value={numServings}
+                onChange={handleNumServingsChange}
+                label="Number of Servings"
+              >
+                <MenuItem value="1">1</MenuItem>
+                <MenuItem value="2">2</MenuItem>
+                <MenuItem value="3">3</MenuItem>
+                <MenuItem value="4">4</MenuItem>
+                <MenuItem value="5">5</MenuItem>
+                <MenuItem value="6">6</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              label="Custom Preferences"
+              value={customPreferences}
+              onChange={handleCustomPreferencesChange}
+            />
             <Box mt={3}>
               <Button variant="contained" color="secondary" onClick={handleGetSuggestion}>
                 Where Should I Eat?
@@ -207,6 +289,9 @@ const Home: React.FC = () => {
                 <MenuItem value="indian">Indian</MenuItem>
                 <MenuItem value="mexican">Mexican</MenuItem>
                 <MenuItem value="japanese">Japanese</MenuItem>
+                <MenuItem value="american">American</MenuItem>
+                <MenuItem value="healthier">Healthier</MenuItem>
+                <MenuItem value="comfort">Comfort Food</MenuItem>
               </Select>
             </FormControl>
             <Typography variant="h5">Restaurants</Typography>
@@ -216,12 +301,14 @@ const Home: React.FC = () => {
                   <Paper
                     key={index}
                     elevation={3}
-                    sx={{ padding: '10px', 
-                    marginTop: '10px', 
-                    backgroundColor: theme.palette.customColors.color2,
-                    whiteSpace: 'pre-wrap',
-                    borderRadius: '5px',
-                    border: '1px solid #ddd', }}
+                    sx={{
+                      padding: '10px',
+                      marginTop: '10px',
+                      backgroundColor: theme.palette.customColors.color2,
+                      whiteSpace: 'pre-wrap',
+                      borderRadius: '5px',
+                      border: '1px solid #ddd',
+                    }}
                   >
                     {fav.suggestion} - Tags: {fav.tags ? fav.tags.join(', ') : 'No Tags'}
                   </Paper>
@@ -235,14 +322,16 @@ const Home: React.FC = () => {
               <Box textAlign={'left'}>
                 {filteredFavorites.filter(fav => fav.type === 'recipe').map((fav, index) => (
                   <Paper
-                  key={index}
-                  elevation={3}
-                  sx={{ padding: '10px', 
-                  marginTop: '10px', 
-                  backgroundColor: theme.palette.secondary.main,
-                  whiteSpace: 'pre-wrap',
-                  borderRadius: '5px',
-                  border: '1px solid #ddd', }}
+                    key={index}
+                    elevation={3}
+                    sx={{
+                      padding: '10px',
+                      marginTop: '10px',
+                      backgroundColor: theme.palette.secondary.main,
+                      whiteSpace: 'pre-wrap',
+                      borderRadius: '5px',
+                      border: '1px solid #ddd',
+                    }}
                   >
                     {fav.suggestion} - Tags: {fav.tags ? fav.tags.join(', ') : 'No Tags'}
                   </Paper>
@@ -282,6 +371,7 @@ const Home: React.FC = () => {
           {renderTabContent()}
         </Container>
       </Box>
+      <Footer />
     </ThemeProvider>
   );
 };

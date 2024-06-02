@@ -4,6 +4,8 @@ import { Box, Typography } from '@mui/material';
 const About: React.FC = () => {
     return (
         <Box textAlign="center" mt={5}>
+            <img src="https://i.imgur.com/9CW99ux.png" alt="logo" width="200px" height="200px" />
+            <br />
         <Typography variant="h4" gutterBottom>
             About
         </Typography>
