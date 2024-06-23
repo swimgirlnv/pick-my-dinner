@@ -14,19 +14,59 @@ const favorites = [];
 const manualSuggestions = [];
 
 app.post("/api/get-suggestion", async (req, res) => {
-  const {option, dietaryPreference, foodTypePreference, healthiness, numServings, customPreferences, searchRadius, location} = req.body;
+  const {
+    option,
+    dietaryPreference,
+    foodTypePreference,
+    healthiness,
+    numServings,
+    customPreferences,
+    searchRadius,
+    location,
+    ingredients,
+  } = req.body;
   try {
     let suggestion;
     if (option === "stay-in") {
-      suggestion = await getRecipeSuggestion(manualSuggestions, dietaryPreference, foodTypePreference, healthiness, numServings, customPreferences);
+      suggestion = await getRecipeSuggestion(
+          manualSuggestions,
+          dietaryPreference,
+          foodTypePreference,
+          healthiness,
+          numServings,
+          customPreferences,
+          ingredients,
+      );
     } else if (option === "go-out") {
-      suggestion = await getRestaurantSuggestion(manualSuggestions, dietaryPreference, foodTypePreference, customPreferences, searchRadius, location);
+      suggestion = await getRestaurantSuggestion(
+          manualSuggestions,
+          dietaryPreference,
+          foodTypePreference,
+          customPreferences,
+          searchRadius,
+          location,
+      );
     } else if (option === "surprise") {
       const randomOption = Math.random() < 0.5 ? "stay-in" : "go-out";
       if (randomOption === "stay-in") {
-        suggestion = await getRecipeSuggestion(manualSuggestions, dietaryPreference, foodTypePreference, healthiness, numServings, customPreferences);
+        suggestion = await getRecipeSuggestion(
+            manualSuggestions,
+            dietaryPreference,
+            foodTypePreference,
+            healthiness,
+            numServings,
+            customPreferences,
+            ingredients,
+        );
       } else if (randomOption === "go-out") {
-        suggestion = await getRestaurantSuggestion(manualSuggestions, dietaryPreference, foodTypePreference, customPreferences, searchRadius, location);
+        suggestion = await getRestaurantSuggestion(
+            manualSuggestions,
+            dietaryPreference,
+            foodTypePreference,
+            customPreferences,
+            searchRadius,
+            location,
+        );
       }
     }
     res.json({suggestion});
@@ -52,29 +92,34 @@ app.get("/api/suggestions", (req, res) => {
   res.json({manualSuggestions});
 });
 
-const getRecipeSuggestion = async (manualSuggestions, dietaryPreference, foodTypePreference, healthiness, numServings, customPreferences) => {
+const getRecipeSuggestion = async (manualSuggestions, dietaryPreference, foodTypePreference, healthiness, numServings, customPreferences, ingredients) => {
   if (manualSuggestions.length) {
     return manualSuggestions[Math.floor(Math.random() * manualSuggestions.length)];
   }
 
   const apiKey = functions.config().openai.api_key;
   let prompt = `Suggest a dinner recipe for tonight`;
-  if (dietaryPreference !== "none") {
-    prompt += ` with a ${dietaryPreference} preference`;
+
+  if (ingredients && ingredients.length > 0) {
+    prompt += ` using the following ingredients: ${ingredients.join(", ")}.`;
+  } else {
+    if (dietaryPreference !== "none") {
+      prompt += ` with a ${dietaryPreference} preference`;
+    }
+    if (foodTypePreference !== "any") {
+      prompt += ` focusing on ${foodTypePreference} cuisine`;
+    }
+    if (healthiness) {
+      prompt += ` that is ${healthiness}`;
+    }
+    if (numServings) {
+      prompt += ` for ${numServings} servings`;
+    }
+    if (customPreferences) {
+      prompt += ` with the following preferences: ${customPreferences}`;
+    }
+    prompt += ".";
   }
-  if (foodTypePreference !== "any") {
-    prompt += ` focusing on ${foodTypePreference} cuisine`;
-  }
-  if (healthiness) {
-    prompt += ` that is ${healthiness}`;
-  }
-  if (numServings) {
-    prompt += ` for ${numServings} servings`;
-  }
-  if (customPreferences) {
-    prompt += ` with the following preferences: ${customPreferences}`;
-  }
-  prompt += ".";
 
   const headers = {
     "Authorization": `Bearer ${apiKey}`,
