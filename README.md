@@ -8,6 +8,8 @@
 
 ## Suggest Dinner Tab
 - for go out results, be able to click on the result to learn more, visit website, map it, etc
+- instead of meters, have miles?
+
 
 ## Favorites Tab
 - include a button to remove a favorite from favorites section
@@ -16,7 +18,9 @@
     - be able to edit and save the recipes? or a notes section or a rating
     - in the favorites section, have only the titles that can drop down or spotlight to show the full thing
 
+
 ## Add your own suggestions Tab
+
 
 
 ## Misc. Other tabs
@@ -33,6 +37,8 @@
 
 ## Overall UI
 - Fix UI for topbar (now mobile friendly)
+- Included error message if location services not enabled (especially on mobile)
+
 
 ## Suggest Dinner Tab
 - add location services for the 'go out' button
@@ -42,6 +48,7 @@
     - add in a how many people
     - american food
     - healthy vs comfort food
+
 
 ## Favorites Tab
 - Want to be able to add tags to your own suggestions so you can filter

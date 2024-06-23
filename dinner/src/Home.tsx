@@ -21,6 +21,9 @@ import {
   Paper,
   ThemeProvider,
   CssBaseline,
+  CircularProgress,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import axios from 'axios';
@@ -41,16 +44,18 @@ const Home: React.FC = () => {
   const [numServings, setNumServings] = useState('');
   const [customPreferences, setCustomPreferences] = useState('');
   const [searchRadius, setSearchRadius] = useState(5000); // Default radius in meters
-  const [manualSuggestions, setManualSuggestions] = useState<string[]>([]);
+  const [restaurantSuggestions, setRestaurantSuggestions] = useState<string[]>([]);
+  const [ingredientSuggestions, setIngredientSuggestions] = useState<string[]>([]);
   const [suggestion, setSuggestion] = useState('');
   const [favorites, setFavorites] = useState<{ suggestion: string; type: string; tags: string[] }[]>([]);
   const [filterTag, setFilterTag] = useState<string>('');
   const [tab, setTab] = useState(0);
   const [location, setLocation] = useState<{ lat: number, lng: number } | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [includeIngredients, setIncludeIngredients] = useState(false);
 
   const resultRef = useRef<HTMLDivElement>(null);
-
 
   useEffect(() => {
     fetchSuggestions();
@@ -75,7 +80,7 @@ const Home: React.FC = () => {
         },
         (error) => {
           console.error('Error getting location:', error);
-          alert('Error getting location. Please ensure location services are enabled.');
+          alert('Error getting location. Please ensure location services are enabled. Without location services, the "go-out" feature will not work.');
         },
         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );
@@ -120,7 +125,8 @@ const Home: React.FC = () => {
   const fetchSuggestions = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/suggestions`);
-      setManualSuggestions(response.data.manualSuggestions);
+      setRestaurantSuggestions(response.data.restaurantSuggestions || []);
+      setIngredientSuggestions(response.data.ingredientSuggestions || []);
     } catch (error) {
       console.error('Error fetching suggestions:', error);
     }
@@ -136,25 +142,38 @@ const Home: React.FC = () => {
   };
 
   const handleGetSuggestion = async () => {
-    if (!location) {
+    if (!location && option === 'go-out') {
       alert('Location data is required for "go-out" suggestions. Please enable location services.');
       return;
     }
+    setIsLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/get-suggestion`, {
-        option,
-        dietaryPreference,
-        foodTypePreference,
-        healthiness,
-        numServings,
-        customPreferences,
-        searchRadius,
-        location,
-      });
+      const requestData = includeIngredients && option === 'stay-in' ? 
+        {
+          option,
+          ingredients: ingredientSuggestions,
+          numServings,
+        } : 
+        {
+          option,
+          dietaryPreference,
+          foodTypePreference,
+          healthiness,
+          numServings,
+          customPreferences,
+          searchRadius,
+          location,
+          restaurantSuggestions,
+          ingredientSuggestions: includeIngredients ? ingredientSuggestions : [],
+        };
+
+      const response = await axios.post(`${API_BASE_URL}/api/get-suggestion`, requestData);
       setSuggestion(response.data.suggestion);
     } catch (error) {
       console.error('Error fetching suggestion:', error);
-      setSuggestion('Error fetching suggestion' + error);
+      setSuggestion('Error fetching suggestion: ' + error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -261,18 +280,30 @@ const Home: React.FC = () => {
               </Select>
             </FormControl>
             {option === 'stay-in' && (
-              <FormControl variant="outlined" fullWidth margin="normal">
-                <TextField
-                  id="num-servings"
-                  label="Number of Servings"
-                  type="number"
-                  value={numServings}
-                  onChange={handleNumServingsChange}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
+              <>
+                <FormControl variant="outlined" fullWidth margin="normal">
+                  <TextField
+                    id="num-servings"
+                    label="Number of Servings"
+                    type="number"
+                    value={numServings}
+                    onChange={handleNumServingsChange}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </FormControl>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={includeIngredients}
+                      onChange={(e) => setIncludeIngredients(e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Use only my ingredients"
                 />
-              </FormControl>
+              </>
             )}
             {option === 'go-out' && (
               <FormControl variant="outlined" fullWidth margin="normal">
@@ -297,14 +328,14 @@ const Home: React.FC = () => {
               onChange={handleCustomPreferencesChange}
             />
             <Box mt={3}>
-              <Button variant="contained" color="secondary" onClick={handleGetSuggestion}>
-              <img src="https://i.imgur.com/9CW99ux.png" alt="logo" width="200px" height="200px" />
+              <Button className="animated-button" variant="contained" color="secondary" onClick={handleGetSuggestion} disabled={isLoading}>
+                {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Get Suggestion'}
               </Button>
             </Box>
             {suggestion && (
               <Box mt={3} ref={resultRef}>
                 <Result suggestion={suggestion} />
-                <Button variant="contained" onClick={handleFavorite} style={{ marginTop: '10px' }}>
+                <Button className="animated-button" variant="contained" onClick={handleFavorite} style={{ marginTop: '10px' }}>
                   Favorite
                 </Button>
               </Box>
@@ -312,7 +343,14 @@ const Home: React.FC = () => {
           </Box>
         );
       case 1:
-        return <AddSuggestion manualSuggestions={manualSuggestions} setManualSuggestions={setManualSuggestions} />;
+        return (
+          <AddSuggestion 
+            restaurantSuggestions={restaurantSuggestions} 
+            setRestaurantSuggestions={setRestaurantSuggestions} 
+            ingredientSuggestions={ingredientSuggestions} 
+            setIngredientSuggestions={setIngredientSuggestions} 
+          />
+        );
       case 2:
         return (
           <Box textAlign="center" mt={5}>
@@ -425,7 +463,7 @@ const Home: React.FC = () => {
                 sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}
               >
                 <Tab label="Suggest Dinner" />
-                <Tab label="Add Your Own Suggestion" />
+                <Tab label="Add Your Own" />
                 <Tab label="Favorites" />
                 <Tab label="Settings" />
                 <Tab label="Help" />
@@ -450,7 +488,7 @@ const Home: React.FC = () => {
                   <ListItemText primary="Suggest Dinner" />
                 </ListItem>
                 <ListItem button onClick={() => setTab(1)}>
-                  <ListItemText primary="Add Your Own Suggestion" />
+                  <ListItemText primary="Add Your Own" />
                 </ListItem>
                 <ListItem button onClick={() => setTab(2)}>
                   <ListItemText primary="Favorites" />
