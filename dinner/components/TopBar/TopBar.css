@@ -1,33 +1,39 @@
 .topbar {
     background-color: #0b3d0b !important; /* Dark forest green */
     color: #ffffff !important; /* White text */
-    /* position: fixed; */
-    /* top: 0; */
-    width: 100vw;
-    display: flex;
-    justify-content: space-around;
-    /* z-index: 1000; */
-  }
-  
-  .menu-icon {
-    margin-right: 16px;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
   }
   
   .tabs {
     flex-grow: 1;
     display: flex;
-    /* color: #ffffff !important; White text */
     justify-content: space-between;
+    align-items: center;
     width: 100%;
-  }
+}
   
   .tab {
     color: #ffffff !important; /* White text */
     font-weight: 500;
     padding: 16px;
+    text-align: center;
+    flex-grow: 1;
   }
   
   .tab-selected {
     background-color: #064206 !important; /* Slightly darker forest green */
   }
   
+  @media (max-width: 768px) {
+    .tabs {
+      flex-direction: column;
+    }
+  
+    .tab {
+      width: 100%;
+      padding: 12px 0;
+    }
+  }

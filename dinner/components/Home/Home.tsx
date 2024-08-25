@@ -398,9 +398,9 @@ const Home: React.FC = () => {
   };
 
   return (
-    <Box className="home-container">
-      <Container>
-        <TopBar tab={tab} setTab={setTab} toggleDrawer={toggleDrawer} />
+    <Box>
+      <TopBar tab={tab} setTab={setTab} toggleDrawer={toggleDrawer} />
+      <Container className="home-container">
         <Drawer
           anchor="left"
           open={drawerOpen}
@@ -414,56 +414,59 @@ const Home: React.FC = () => {
             onKeyDown={toggleDrawer(false)}
           >
             <List>
-              <ListItem button onClick={() => setTab(0)}>
+              <ListItem onClick={() => setTab(0)}>
                 <ListItemText primary="Suggest Dinner" />
               </ListItem>
-              <ListItem button onClick={() => setTab(1)}>
+              <ListItem onClick={() => setTab(1)}>
                 <ListItemText primary="Add Your Own" />
               </ListItem>
-              <ListItem button onClick={() => setTab(2)}>
+              <ListItem onClick={() => setTab(2)}>
                 <ListItemText primary="Favorites" />
               </ListItem>
-              <ListItem button onClick={() => setTab(3)}>
+              <ListItem onClick={() => setTab(3)}>
                 <ListItemText primary="Settings" />
               </ListItem>
-              <ListItem button onClick={() => setTab(4)}>
+              <ListItem onClick={() => setTab(4)}>
                 <ListItemText primary="Help" />
               </ListItem>
-              <ListItem button onClick={() => setTab(5)}>
+              <ListItem onClick={() => setTab(5)}>
                 <ListItemText primary="About" />
               </ListItem>
             </List>
           </Box>
         </Drawer>
         {renderTabContent()}
+      </Container>
+      <Container className='cartContainer'>
         <Fab
-          color="primary"
-          aria-label="cart"
-          className="cart-fab"
-          onClick={handleCartOpen}
-        >
-          <Badge badgeContent={cart.length} color="secondary">
-            <ShoppingCartIcon />
-          </Badge>
-        </Fab>
-        <Modal
-          open={cartOpen}
-          onClose={handleCartClose}
-          aria-labelledby="cart-modal-title"
-          aria-describedby="cart-modal-description"
-        >
-          <Box className="cart-modal">
-            <Typography id="cart-modal-title" variant="h6" component="h2">
-              Shopping Cart
-            </Typography>
-            <Cart
-              cart={cart}
-              removeFromCart={removeFromCart}
-              clearCart={clearCart}
-              handleCheckout={handleCheckout}
-            />
-          </Box>
-        </Modal>
+            color="primary"
+            aria-label="cart"
+            className="cart-fab"
+            onClick={handleCartOpen}
+            sx={{position: 'fixed', bottom: '20px', right: '20px'}}
+          >
+            <Badge badgeContent={cart.length} color="secondary">
+              <ShoppingCartIcon />
+            </Badge>
+          </Fab>
+          <Modal
+            open={cartOpen}
+            onClose={handleCartClose}
+            aria-labelledby="cart-modal-title"
+            aria-describedby="cart-modal-description"
+          >
+            <Box className="cart-modal">
+              <Typography id="cart-modal-title" variant="h6" component="h2">
+                Shopping Cart
+              </Typography>
+              <Cart
+                cart={cart}
+                removeFromCart={removeFromCart}
+                clearCart={clearCart}
+                handleCheckout={handleCheckout}
+              />
+            </Box>
+          </Modal>
       </Container>
       <Footer />
     </Box>

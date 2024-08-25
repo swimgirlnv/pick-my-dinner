@@ -27,6 +27,7 @@ body {
   min-height: 100vh;
   background-color: var(--background-color);
   color: var(--text-color);
+  overflow-x: hidden;
 }
 
 a {
@@ -71,12 +72,26 @@ input {
 .home-container {
   background-color: var(--background-color);
   min-height: 100vh;
-  padding-top: 1000px; /* Offset for the fixed AppBar */
-  width: 100vw;
+  padding-top: 64px; /* Adjusted for sticky AppBar */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+}
+
+.cartContainer{
+  position: fixed;
+  display: flex;
+  align-items: end;
+  justify-content: flex-end;
+  bottom: 0;
+  right: 16px;
 }
 
 .drawer {
-  display: none;
+  display: block;
 }
 
 .drawer-box {
@@ -97,7 +112,6 @@ input {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 400px;
   background-color: var(--background-color);
   border: 2px solid var(--text-color);
   box-shadow: 24px;
@@ -114,6 +128,9 @@ input {
   justify-content: center;
   align-items: center;
   border: none;
+  width: 100%;
+  max-width: 1200px;
+  box-sizing: border-box;
 }
 
 .MuiTypography-root {
@@ -124,7 +141,9 @@ input {
 .MuiFormControl-root,
 .MuiTextField-root,
 .MuiSelect-root {
-  margin-bottom: var(--spacing); /* Consistent spacing */
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: var(--spacing);
 }
 
 .MuiPaper-root {
@@ -137,6 +156,8 @@ input {
   flex-direction: column;
   align-items: center;
   padding: var(--padding);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 input,
@@ -153,4 +174,37 @@ form {
 
 button {
   margin-top: var(--spacing);
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    padding-top: 56px; /* For smaller screens */
+  }
+
+  .MuiBox-root {
+    padding: 8px;
+  }
+
+  .MuiTypography-root {
+    font-size: 1.25rem;
+  }
+
+  .MuiFormControl-root,
+  .MuiTextField-root,
+  .MuiSelect-root {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-width: 769px) {
+  .MuiFormControl-root,
+  .MuiTextField-root,
+  .MuiSelect-root {
+    max-width: 600px;
+  }
+
+  .container {
+    max-width: 1200px;
+  }
 }
