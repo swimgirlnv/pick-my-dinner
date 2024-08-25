@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Paper, ThemeProvider, createTheme, Tabs, Tab } from '@mui/material';
+import './AddSuggestion.css';
+
 
 const theme = createTheme();
 
@@ -31,7 +33,7 @@ const AddSuggestion: React.FC<AddSuggestionProps> = ({
         }
     };
 
-    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    const handleTabChange = (event: React.ChangeEvent<object>, newValue: number) => {
         setSelectedTab(newValue);
     };
 

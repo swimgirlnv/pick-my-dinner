@@ -1,0 +1,21 @@
+.MuiBox-root {
+    background-color: var(--background-color); /* White background */
+    border-radius: var(--border-radius);
+    padding: var(--padding);
+    margin: var(--margin) auto;
+    text-align: center;
+  }
+  
+  .MuiTypography-root {
+    margin-bottom: var(--margin);
+    color: var(--text-color); /* Black text */
+  }
+  
+  .MuiPaper-root {
+    background-color: var(--background-color); /* White background */
+    border-radius: var(--border-radius);
+    padding: var(--padding);
+    margin-top: var(--margin);
+    color: var(--text-color); /* Black text */
+  }
+  

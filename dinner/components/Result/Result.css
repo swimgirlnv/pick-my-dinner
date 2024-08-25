@@ -1,0 +1,35 @@
+.MuiBox-root {
+    white-space: pre-wrap;
+    background-color: #f5f5f5; /* Light background */
+    padding: var(--padding);
+    border-radius: var(--border-radius);
+    margin-top: var(--margin);
+    border: 1px solid #ddd;
+    text-align: left;
+    color: var(--text-color); /* Black text */
+  }
+  
+  .MuiCard-root {
+    margin-top: var(--margin);
+  }
+  
+  .MuiCardMedia-root {
+    height: 140px;
+  }
+  
+  .MuiTypography-root {
+    margin-bottom: var(--margin);
+    color: var(--text-color); /* Black text */
+  }
+  
+  .MuiList-root {
+    margin-top: var(--margin);
+  }
+  
+  .MuiListItem-root {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--margin);
+  }
+  

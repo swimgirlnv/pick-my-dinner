@@ -1,0 +1,13 @@
+.footer {
+    background-color: var(--footer-background-color);
+    text-align: center;
+    position: static;
+    bottom: 0;
+    width: 100%;
+    padding: var(--padding);
+  }
+  
+  .footer-text {
+    color: var(--footer-text-color);
+  }
+  

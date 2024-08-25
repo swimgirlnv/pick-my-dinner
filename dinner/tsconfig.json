@@ -20,6 +20,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "config.js"],
+  "include": ["src", "config.js", "components/About/About.tsx", "components/AddSuggestion/AddSuggestion.tsx", "components/Cart/Cart.tsx", "components/Footer/Footer.tsx", "components/Favorites/Favorites.tsx", "components/Help/Help.tsx", "components/Result/Result.tsx", "components/Settings/Settings.tsx", "components/Home/Home.tsx"],
   "references": [{ "path": "./tsconfig.node.json" }], "src/Options.js": "src/Home.js"
 }

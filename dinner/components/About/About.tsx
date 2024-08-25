@@ -1,5 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
+import './About.css';
+
 
 const About: React.FC = () => {
     return (

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
+import './Settings.css';
 
 const Settings: React.FC = () => {
     return (
