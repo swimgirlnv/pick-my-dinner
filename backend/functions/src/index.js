@@ -27,9 +27,8 @@ app.post("/api/get-suggestion", async (req, res) => {
   } = req.body;
   try {
     let suggestion;
-    let imageUrl = "";
     if (option === "stay-in") {
-      ({suggestion, imageUrl} = await getRecipeSuggestion(
+      suggestion = await getRecipeSuggestion(
           manualSuggestions,
           dietaryPreference,
           foodTypePreference,
@@ -37,7 +36,7 @@ app.post("/api/get-suggestion", async (req, res) => {
           numServings,
           customPreferences,
           ingredients,
-      ));
+      );
     } else if (option === "go-out") {
       suggestion = await getRestaurantSuggestion(
           manualSuggestions,
@@ -50,7 +49,7 @@ app.post("/api/get-suggestion", async (req, res) => {
     } else if (option === "surprise") {
       const randomOption = Math.random() < 0.5 ? "stay-in" : "go-out";
       if (randomOption === "stay-in") {
-        ({suggestion, imageUrl} = await getRecipeSuggestion(
+        suggestion = await getRecipeSuggestion(
             manualSuggestions,
             dietaryPreference,
             foodTypePreference,
@@ -58,7 +57,7 @@ app.post("/api/get-suggestion", async (req, res) => {
             numServings,
             customPreferences,
             ingredients,
-        ));
+        );
       } else if (randomOption === "go-out") {
         suggestion = await getRestaurantSuggestion(
             manualSuggestions,
@@ -70,7 +69,7 @@ app.post("/api/get-suggestion", async (req, res) => {
         );
       }
     }
-    res.json({suggestion, imageUrl});
+    res.json({suggestion});
   } catch (error) {
     console.error("Error fetching suggestion:", error);
     res.status(500).json({error: "Backend Error: Error fetching suggestion", details: error.message});
@@ -95,9 +94,7 @@ app.get("/api/suggestions", (req, res) => {
 
 const getRecipeSuggestion = async (manualSuggestions, dietaryPreference, foodTypePreference, healthiness, numServings, customPreferences, ingredients) => {
   if (manualSuggestions.length) {
-    const suggestion = manualSuggestions[Math.floor(Math.random() * manualSuggestions.length)];
-    const imageUrl = await generateRecipeImage(suggestion);
-    return {suggestion, imageUrl};
+    return manualSuggestions[Math.floor(Math.random() * manualSuggestions.length)];
   }
 
   const apiKey = functions.config().openai.api_key;
@@ -141,43 +138,14 @@ const getRecipeSuggestion = async (manualSuggestions, dietaryPreference, foodTyp
         {headers},
     );
 
-    const suggestion = response.data.choices[0].text.trim();
-    const imageUrl = await generateRecipeImage(suggestion);
-    return {suggestion, imageUrl};
+    return response.data.choices[0].text.trim();
   } catch (error) {
     console.error("Error fetching recipe suggestion:", error.response ? error.response.data : error.message);
     if (error.response) {
       console.error("Error status:", error.response.status);
       console.error("Error data:", error.response.data);
     }
-    return {suggestion: "Error fetching recipe suggestion", imageUrl: ""};
-  }
-};
-
-const generateRecipeImage = async (recipeDescription) => {
-  const apiKey = functions.config().openai.api_key;
-
-  const data = {
-    prompt: recipeDescription,
-    n: 1,
-    size: "512x512",
-  };
-
-  const headers = {
-    "Authorization": `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
-  };
-
-  try {
-    const response = await axios.post("https://api.openai.com/v1/images/generations", data, {headers});
-    return response.data.data[0].url;
-  } catch (error) {
-    console.error("Error generating recipe image:", error.response ? error.response.data : error.message);
-    if (error.response) {
-      console.error("Error status:", error.response.status);
-      console.error("Error data:", error.response.data);
-    }
-    return "";
+    return "Error fetching recipe suggestion";
   }
 };
 
@@ -208,7 +176,22 @@ const getRestaurantSuggestion = async (manualSuggestions, dietaryPreference, foo
 
     if (response.data.results.length) {
       const randomIndex = Math.floor(Math.random() * response.data.results.length);
-      return response.data.results[randomIndex].name;
+      const restaurant = response.data.results[randomIndex];
+
+      // Fetch detailed information about the selected restaurant
+      const placeDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${restaurant.place_id}&key=${apiKey}`;
+      const detailsResponse = await axios.get(placeDetailsUrl);
+      const restaurantDetails = detailsResponse.data.result;
+
+      // Return the restaurant details
+      return {
+        name: restaurantDetails.name,
+        address: restaurantDetails.formatted_address,
+        phone: restaurantDetails.formatted_phone_number,
+        rating: restaurantDetails.rating,
+        website: restaurantDetails.website,
+        opening_hours: restaurantDetails.opening_hours ? restaurantDetails.opening_hours.weekday_text : "Not available",
+      };
     } else {
       return "No restaurants found.";
     }
