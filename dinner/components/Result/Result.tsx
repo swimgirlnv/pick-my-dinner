@@ -37,7 +37,7 @@ interface ResultProps {
 const Result: React.FC<ResultProps> = ({ suggestion, imageUrl, addToCart, addedToCart, addedToFavorites, handleFavorite }) => {
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [isOpenNow, setIsOpenNow] = useState<boolean | null>(null);
-
+  console.log(imageUrl);
   useEffect(() => {
     if (typeof suggestion === 'string') {
       const parsedIngredients = suggestion

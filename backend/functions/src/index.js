@@ -27,6 +27,7 @@ app.post("/api/get-suggestion", async (req, res) => {
   } = req.body;
   try {
     let suggestion;
+    let imageUrl = "";
     if (option === "stay-in") {
       suggestion = await getRecipeSuggestion(
           manualSuggestions,
@@ -37,6 +38,7 @@ app.post("/api/get-suggestion", async (req, res) => {
           customPreferences,
           ingredients,
       );
+      imageUrl = await generateRecipeImage(suggestion);
     } else if (option === "go-out") {
       suggestion = await getRestaurantSuggestion(
           manualSuggestions,
@@ -58,6 +60,7 @@ app.post("/api/get-suggestion", async (req, res) => {
             customPreferences,
             ingredients,
         );
+        // imageUrl = await generateRecipeImage(suggestion);
       } else if (randomOption === "go-out") {
         suggestion = await getRestaurantSuggestion(
             manualSuggestions,
@@ -69,12 +72,41 @@ app.post("/api/get-suggestion", async (req, res) => {
         );
       }
     }
-    res.json({suggestion});
+    res.json({suggestion, imageUrl});
   } catch (error) {
     console.error("Error fetching suggestion:", error);
     res.status(500).json({error: "Backend Error: Error fetching suggestion", details: error.message});
   }
 });
+
+const generateRecipeImage = async (recipe) => {
+  const apiKey = functions.config().openai.api_key; // Use your API key
+  const headers = {
+    "Authorization": `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+  };
+
+  const data = {
+    prompt: `A photo of a delicious dish called ${recipe}.`,
+    n: 1,
+    size: "1024x1024",
+  };
+
+  try {
+    console.log("Generating image with prompt:", data.prompt);
+    const response = await axios.post(
+        "https://api.openai.com/v1/images/generations",
+        data,
+        {headers},
+    );
+
+    console.log("Image generation response:", response.data);
+    return response.data.data[0].url; // Return the image URL
+  } catch (error) {
+    console.error("Error generating recipe image:", error.response ? error.response.data : error.message);
+    return "https://artsmidnorthcoast.com/wp-content/uploads/2014/05/no-image-available-icon-6-300x188.png"; // Return an empty string if there’s an error
+  }
+};
 
 app.post("/api/add-favorite", (req, res) => {
   const {suggestion, type, tags} = req.body;
