@@ -11,7 +11,7 @@ interface TopBarProps {
 
 const TopBar: React.FC<TopBarProps> = ({ tab, setTab, toggleDrawer }) => {
   return (
-    <AppBar position='static' sx={{top: '0'}} className='topbar'>
+    <AppBar position='static' sx={{top: '0', width: '90vw'}} className='topbar'>
       <Container maxWidth="xl">
         <Toolbar disableGutters sx={{display: 'flex', justifyContent: 'space-around'}}>
           <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer(true)} className="menu-icon">

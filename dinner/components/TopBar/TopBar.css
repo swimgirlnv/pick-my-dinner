@@ -1,7 +1,7 @@
 .topbar {
     background-color: #0b3d0b !important; /* Dark forest green */
     color: #ffffff !important; /* White text */
-    width: 100%;
+    width: 100vw;
     position: fixed;
     top: 0;
     z-index: 1000;
